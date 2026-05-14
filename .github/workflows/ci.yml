@@ -12,7 +12,6 @@ permissions:
   security-events: write # required for SARIF upload to GitHub Security tab
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/secure-mlops-pipeline
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
@@ -62,6 +61,10 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set lowercase image name
+        run: |
+          echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/secure-mlops-pipeline" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
