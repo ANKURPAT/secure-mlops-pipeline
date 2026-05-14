@@ -1,0 +1,39 @@
+replicaCount: 1
+
+image:
+  repository: localhost/secure-mlops-pipeline
+  tag: kind
+  pullPolicy: Never  # image loaded directly into kind, not pulled from registry
+
+service:
+  type: ClusterIP
+  port: 8000
+
+mlflow:
+  trackingUri: http://mlflow.mlops.svc.cluster.local:5000
+  modelName: fraud-detector
+  modelAlias: staging
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 3

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  MLFLOW_TRACKING_URI: {{ .Values.mlflow.trackingUri | quote }}
+  MODEL_NAME: {{ .Values.mlflow.modelName | quote }}
+  MODEL_ALIAS: {{ .Values.mlflow.modelAlias | quote }}
