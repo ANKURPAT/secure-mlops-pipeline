@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fraud-api-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  fraud-api-dashboard.json: |
+    {
+      "title": "Fraud Detection API",
+      "uid": "fraud-api-day6",
+      "schemaVersion": 38,
+      "refresh": "10s",
+      "time": {"from": "now-30m", "to": "now"},
+      "panels": [
+        {
+          "id": 1,
+          "title": "Request Rate (req/s)",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "targets": [{"expr": "rate(fraud_predictions_total[1m])", "legendFormat": "{{outcome}} - v{{model_version}}"}]
+        },
+        {
+          "id": 2,
+          "title": "p95 Prediction Latency (ms)",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "targets": [{"expr": "histogram_quantile(0.95, rate(fraud_prediction_duration_seconds_bucket[1m])) * 1000", "legendFormat": "p95 v{{model_version}}"}]
+        },
+        {
+          "id": 3,
+          "title": "Fraud vs Legit Predictions",
+          "type": "piechart",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "targets": [{"expr": "sum by (outcome) (increase(fraud_predictions_total[30m]))", "legendFormat": "{{outcome}}"}]
+        },
+        {
+          "id": 4,
+          "title": "Total Predictions Served",
+          "type": "stat",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "targets": [{"expr": "sum(fraud_predictions_total)", "legendFormat": "total"}]
+        }
+      ]
+    }

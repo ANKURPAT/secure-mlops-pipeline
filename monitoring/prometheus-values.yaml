@@ -1,0 +1,48 @@
+# Minimal kube-prometheus-stack for a single-node kind cluster.
+# Full default install wants ~4GB RAM — we strip it down to fit.
+
+grafana:
+  enabled: true
+  adminPassword: "mlops-dev"   # dev only, never production
+  service:
+    type: ClusterIP
+  persistence:
+    enabled: false             # no PVC for Grafana in dev
+  grafana.ini:
+    auth.anonymous:
+      enabled: true
+      org_role: Viewer         # read-only anonymous access for demos
+
+alertmanager:
+  enabled: false               # not needed for Day 6
+
+prometheus:
+  prometheusSpec:
+    # Allow ServiceMonitors from any namespace — required for mlops namespace
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    retention: 24h
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+
+# Reduce resource footprint on kind
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: false               # not useful in kind single-node
+
+prometheusOperator:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
