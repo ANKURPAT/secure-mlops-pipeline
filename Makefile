@@ -66,3 +66,21 @@ trivy-scan:
 		--format table \
 		--output security/scans/trivy-$(IMAGE_TAG).txt
 	cat security/scans/trivy-$(IMAGE_TAG).txt
+
+.PHONY: ci-local
+
+ci-local:
+	@echo "--- lint ---"
+	.venv/bin/python -m ruff check ml app tests
+	.venv/bin/python -m ruff format --check ml app tests
+	@echo "--- test ---"
+	.venv/bin/python -m pytest tests/ -v --tb=short
+	@echo "--- build ---"
+	podman build --tag secure-mlops-pipeline:ci .
+	@echo "--- scan ---"
+	podman save secure-mlops-pipeline:ci -o /tmp/secure-mlops-pipeline-ci.tar
+	trivy image \
+		--input /tmp/secure-mlops-pipeline-ci.tar \
+		--severity HIGH,CRITICAL \
+		--format table
+	@echo "--- done ---"
