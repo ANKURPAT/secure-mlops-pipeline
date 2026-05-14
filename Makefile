@@ -30,3 +30,11 @@ lint:  ## Lint with ruff
 clean:  ## Remove caches and local MLflow state
 	rm -rf .pytest_cache .ruff_cache .coverage htmlcov __pycache__
 	find . -name __pycache__ -exec rm -rf {} +
+
+.PHONY: serve serve-prod
+
+serve:
+	.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+serve-prod:
+	.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
