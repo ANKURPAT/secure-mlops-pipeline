@@ -38,3 +38,31 @@ serve:
 
 serve-prod:
 	.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+
+IMAGE_NAME  := secure-mlops-pipeline
+IMAGE_TAG   := dev
+
+.PHONY: docker-build docker-run docker-stop trivy-scan
+
+docker-build:
+	podman build --tag $(IMAGE_NAME):$(IMAGE_TAG) .
+
+docker-run:
+	podman run --rm \
+		--name fraud-api \
+		-p 8000:8000 \
+		-e MLFLOW_TRACKING_URI=http://host.containers.internal:5000 \
+		$(IMAGE_NAME):$(IMAGE_TAG)
+
+docker-stop:
+	podman stop fraud-api || true
+
+trivy-scan:
+	mkdir -p security/scans
+	podman save $(IMAGE_NAME):$(IMAGE_TAG) -o /tmp/$(IMAGE_NAME)-$(IMAGE_TAG).tar
+	trivy image \
+		--input /tmp/$(IMAGE_NAME)-$(IMAGE_TAG).tar \
+		--severity HIGH,CRITICAL \
+		--format table \
+		--output security/scans/trivy-$(IMAGE_TAG).txt
+	cat security/scans/trivy-$(IMAGE_TAG).txt
